@@ -14,17 +14,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install yq
-        run: |
-          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
-          sudo chmod +x /usr/local/bin/yq
-
-      - name: Read image info from YAML
+      - name: Read YAML
         id: image
         run: |
-          REPO=$(yq '.image.repository' image.yml)
-          TAG=$(yq '.image.tag' image.yml)
-
+          REPO=$(python -c "import yaml;print(yaml.safe_load(open('image.yml'))['image']['repository'])")
+          TAG=$(python -c "import yaml;print(yaml.safe_load(open('image.yml'))['image']['tag'])")
+          
           echo "repo=$REPO" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
