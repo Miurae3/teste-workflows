@@ -1,0 +1,33 @@
+name: Pull Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - image.yml
+
+jobs:
+  pull-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Read image info from YAML
+        id: image
+        run: |
+          REPO=$(yq '.image.repository' image.yml)
+          TAG=$(yq '.image.tag' image.yml)
+
+          echo "repo=$REPO" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Pull Docker image
+        run: |
+          docker pull ${{ steps.image.outputs.repo }}:${{ steps.image.outputs.tag }}
